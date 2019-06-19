@@ -1,0 +1,35 @@
+body{
+	padding-top: 1rem;
+}
+
+
+.scroll{
+	overflow-x: hidden;
+	overflow-y: scroll;
+	height: 300px;
+}
+
+.activeRow{
+	background: #dcdcdc;
+}
+
+.none{
+	display: none;
+}
+
+.padding_1{
+	padding : 1rem;
+}
+
+.result_card{
+	padding-top: 2rem;
+	top: 60%;
+}
+button.ticket{
+	width: 160px;
+	margin: 0.4rem;
+}
+
+button.tenkey{
+	margin: 0.1rem;
+}

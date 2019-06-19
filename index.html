@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport"
+		content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>チケット計算</title>
+
+	<!-- Bootstrap4 CDN -->
+	<link rel="stylesheet"
+		href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+		integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+		crossorigin="anonymous">
+	<!-- 自作CSS -->
+	<link rel="stylesheet" href="stylesheet.css">
+
+	<!-- Vue.js CDN -->
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<!-- 自作スクリプト -->
+	<script src="NormalFunctions.js"></script>
+</head>
+
+<body>
+	<div class="container">
+		<div id="app">
+			<div class="row">
+				<div class="col-8 padding_1">
+					<!--
+						HACk: 以下くそコード（テーブル部分）
+					-->
+					<table class="table">
+						<thead class="thead-dark">
+							<tr>
+								<th>区分</th>
+								<th>名目</th>
+								<th>単価</th>
+								<th>数量</th>
+							</tr>
+						</thead>
+					</table>
+					<div class="scroll">
+						<table class="table tabel-striped">
+							<tbody>
+								<!-- 商品を表示・数量変更対象を選択するための部分 -->
+								<tr v-for="item_ in cartSequence">
+									<td style="width: 25%"
+										v-on:click.prevent="setActiveItem(item_.discountId, item_.itemId)"
+										v-bind:class="{activeRow: isActiveRow(item_.discountId, item_.itemId)}"
+										v-show=" isInCart(item_.discountId, item_.itemId) ">
+										<button class="btn btn-sm disabled"
+											v-bind:class="[individualDicsounts[item_.discountId].colorClass]">
+											<small>{{ individualDicsounts[item_.discountId].label }}</small>
+										</button>
+									</td>
+									<td style="width: 25%"
+										v-on:click.prevent="setActiveItem(item_.discountId, item_.itemId)"
+										v-bind:class="{activeRow: isActiveRow(item_.discountId, item_.itemId)}"
+										v-show=" isInCart(item_.discountId, item_.itemId) ">
+										{{ items[item_.itemId].label }}</td>
+									<td style="width: 30%"
+										v-on:click.prevent="setActiveItem(item_.discountId, item_.itemId)"
+										v-bind:class="{activeRow: isActiveRow(item_.discountId, item_.itemId)}"
+										v-show=" isInCart(item_.discountId, item_.itemId) ">
+										{{ items[item_.itemId].price }}
+										<div
+											v-show=" individualDicsounts[item_.discountId].rate !== 0 ">
+											-
+											<small
+												style="color: red">{{ items[item_.itemId].price * individualDicsounts[item_.discountId].rate }}</small>
+										</div>
+									</td>
+									<td style="width: 20%"
+										v-on:click.prevent="setActiveItem(item_.discountId, item_.itemId)"
+										v-bind:class="{activeRow: isActiveRow(item_.discountId, item_.itemId)}"
+										v-show=" isInCart(item_.discountId, item_.itemId) ">
+										{{ getItemNum(item_.discountId, item_.itemId) }}
+									</td>
+								</tr>
+								<tr>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="col-4 result_card_parent">
+					<div class="card card-body result_card">
+						<!-- 結果表示部 -->
+						<h3>割引額：{{ total - discountTotal }} 円</h3>
+						<h2>合計：{{ discountTotal }} 円</h2>
+					</div>
+				</div>
+			</div>
+			<div class="row padding_1">
+				<table class="col-7">
+					<tr v-for="row in itemKey">
+						<!-- 商品（入場料）ボタン -->
+						<td v-for="item_ in row" :key="item_.id">
+							<button class="btn ticket"
+								v-bind:class="[individualDicsounts[currentDiscountMode].colorClass]"
+								v-on:click="addCart(item_.id)">
+								{{ items[item_.id].label }}</button>
+						</td>
+					</tr>
+					<tr v-for="row in discountKey">
+						<!-- 割引モード変更用ボタン -->
+						<td v-for="btn in row">
+							<button class="btn btn-lg ticket"
+								v-bind:class="[{disabled: currentDiscountMode === btn.id}, individualDicsounts[btn.id].colorClass]"
+								v-on:click="changeCurrentDiscountMode(btn.id)">
+								{{ individualDicsounts[btn.id].label }}
+							</button>
+						</td>
+					</tr>
+				</table>
+				<table class="col-5">
+					<!-- テンキーの数値表示部 -->
+					<tr>
+						<td colspan="3"><input type="text"
+								class="input-group-lg" name="display"
+								readonly="readonly" v-model="tenKeyOutput">
+						</td>
+					</tr>
+					<!-- 数値入力・操作用ボタン（テンキー） -->
+					<tr v-for="row in tenKey">
+						<td v-for="key in row">
+							<button
+								v-bind:class="[operationKeys[key].colorClass]"
+								v-on:click=" calc(key) "><b>{{ operationKeys[key].label }}</b></button>
+						</td>
+					</tr>
+					<tr v-for="row in opeKey">
+						<td v-for="key in row">
+							<button
+								v-bind:class="[operationKeys[key].colorClass]"
+								v-on:click=" calc(key) "><b>{{ operationKeys[key].label }}</b></button>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<script src=" TicketCalculator.js">
+	</script>
+
+</body>
+
+</html>
