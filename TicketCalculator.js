@@ -140,7 +140,7 @@ var app = new Vue({
 				// Activeな商品を削除
 				case 'C':
 					if (this.activeDiscountId != null && this.activeItemId != null) {
-						// 入力順序から削除対処の商品を削除
+						// 入力順序から削除対象の商品を削除
 						for(let i=0; i<this.cartSequence.length; i++ ){
 							if(this.cartSequence[i].discountId === this.activeDiscountId){
 								if(this.cartSequence[i].itemId === this.activeItemId){
