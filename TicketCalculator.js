@@ -199,7 +199,7 @@ var app = new Vue({
 		addCart: function (itemId) {
 			console.log("Discount: " + this.currentDiscountMode + ", Item: " + itemId);
 
-			if (!this.isInCart(this.currentDiscountMode, itemId)) {
+			if (!this.isExists(this.currentDiscountMode, itemId)) {
 				// 確認事項の表示
 				let required = true;
 				if(this.items[itemId].msg !== null){
@@ -272,13 +272,21 @@ var app = new Vue({
 		 * @param {商品ID} itemId 
 		 */
 		isInCart: function (discountId, itemId) {
-			if (discountId in this.cartItems){
-				if (itemId in this.cartItems[discountId]){
-					//console.log("id: " + itemId + " " + (this.cartItems[discountId][itemId].num > 0));
+			if (this.isExists(discountId, itemId)){
 					return (this.cartItems[discountId][itemId].num > 0);
-				}
 			}
 			return false;
+		},
+
+		/**
+		 * @brief 該当する商品がカートの中にある場合trueを返す。（数量は関係ない）
+		 * @param {割引ID} discountId 
+		 * @param {商品ID} itemId 
+		 */
+		isExists: function (discountId, itemId) {
+			if (discountId in this.cartItems){
+				return itemId in this.cartItems[discountId]
+			}
 		},
 
 		/**
