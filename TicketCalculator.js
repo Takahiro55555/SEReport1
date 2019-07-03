@@ -120,7 +120,12 @@ var app = new Vue({
 					this.cartItems[this.activeDiscountId][this.activeItemId].num = this.tenKeyOutput;
 
 					if (this.tenKeyOutput == 0){
+						// 商品を削除
 						this.$set(this.cartItems[this.activeDiscountId][this.activeItemId], "num", 0);
+						
+						// 商品の入力順を削除
+						this.removeSequence(this.activeDiscountId, this.activeItemId);
+
 						this.activeDiscountId = null;
 						this.activeItemId = null;
 					}
@@ -140,18 +145,12 @@ var app = new Vue({
 				// Activeな商品を削除
 				case 'C':
 					if (this.activeDiscountId != null && this.activeItemId != null) {
-						// 入力順序から削除対象の商品を削除
-						for(let i=0; i<this.cartSequence.length; i++ ){
-							if(this.cartSequence[i].discountId === this.activeDiscountId){
-								if(this.cartSequence[i].itemId === this.activeItemId){
-									this.cartSequence.splice(i, 1);
-									console.log("delete from sequence: " + this.activeItemId);
-								}
-							}
-						}
+						// 商品の入力順を削除
+						this.removeSequence(this.activeDiscountId, this.activeItemId);
 						
 						// 商品の数を0にする
 						this.$set(this.cartItems[this.activeDiscountId][this.activeItemId], "num", 0);
+
 						this.activeDiscountId = null;
 						this.activeItemId = null;
 						this.tenKeyOutput = 0;
@@ -200,7 +199,8 @@ var app = new Vue({
 			console.log("Discount: " + this.currentDiscountMode + ", Item: " + itemId);
 
 			if (!this.isExists(this.currentDiscountMode, itemId)) {
-				// 確認事項の表示
+				// 新規に入力された商品で、確認事項がある場合は確認画面を表示
+				// 割引モードに関係なく該当商品が入力済みの場合、表示しない
 				let required = true;
 				if(this.items[itemId].msg !== null){
 					for(key in this.cartItems){
@@ -212,19 +212,20 @@ var app = new Vue({
 					}
 					if(required) alert(this.items[itemId].msg);
 				}
-
-				this.cartSequence.unshift({"discountId": this.currentDiscountMode, "itemId": itemId});
 				if(!(this.currentDiscountMode in this.cartItems)){
 					this.cartItems[this.currentDiscountMode] = {};
 				}
 				this.$set(this.cartItems[this.currentDiscountMode], itemId, {"num": 1});
 				
-
 				console.log("new item: " + itemId);
 			} else {
 				console.log("this item alrady exists: " + itemId);
 				this.cartItems[this.currentDiscountMode][itemId].num += 1;
 			}
+
+			// 商品の入力順を設定（既出の場合、何もしない）
+			this.setSequence(this.currentDiscountMode, itemId);
+
 			// Activeを設定
 			this.activeDiscountId = this.currentDiscountMode;
 			this.activeItemId = itemId;
@@ -238,6 +239,12 @@ var app = new Vue({
 			this.discountTotal *= calcGroupDiscountRate(this.cartItems, this.groupDicsounts);
 			
 		},
+
+		/**
+		 * @brief Activeな商品を設定
+		 * @param {割引ID} discountId 
+		 * @param {商品ID} itemId 
+		 */
 		setActiveItem: function (discountId, itemId) {
 			this.activeItemId = itemId;
 			this.activeDiscountId = discountId;
@@ -246,14 +253,20 @@ var app = new Vue({
 			console.log("discountItemId: " + discountId);
 		},
 
+		/**
+		 * @brief 割引モードを変更し確認事項があり、表示していないと考えられる場合は表示する。
+		 * @param {割引ID} discountId 
+		 */
 		changeCurrentDiscountMode: function(discountId) {
 			this.currentDiscountMode = discountId;
-
 			// 確認事項の表示
 			if(!(discountId in this.cartItems)){
 				if(this.individualDicsounts[discountId].msg !== null){
 					alert(this.individualDicsounts[discountId].msg);
 				}
+			}
+			if(!(this.currentDiscountMode in this.cartItems)){
+				this.cartItems[this.currentDiscountMode] = {};
 			}
 		},
 
@@ -262,8 +275,38 @@ var app = new Vue({
 		 * @param {割引ID} discountId
 		 * @param {商品ID} itemId 
 		 */
-		getItemNum: function(discountId, itemId){
+		getItemNum: function (discountId, itemId) {
 			return this.cartItems[discountId][itemId].num;
+		},
+
+		/**
+		 * @brief 商品の入力順を設定する。当該商品が設定済みの場合何もしない
+		 * @param {割引ID} discountId 
+		 * @param {商品ID} itemId 
+		 */
+		setSequence: function (discountId, itemId) {
+			// すでにシーケンス中に当該商品が存在する場合は、何もしない。
+			for (let i=0; len = this.cartSequence.length, i < len; i++) {
+				if (this.cartSequence[i].itemId === itemId) {
+					if (this.cartSequence[i].discountId === discountId) return; // 当該商品発見のため何もしない
+				}
+			}
+			this.cartSequence.unshift({"discountId": discountId, "itemId": itemId});
+		},
+
+		/**
+		 * @brief 入力順序から削除対象の商品を削除
+		 * @param {割引ID} discountId 
+		 * @param {商品ID} itemId 
+		 */
+		removeSequence: function (discountId, itemId) {
+			for(let i=0; i<this.cartSequence.length; i++ ){
+				if(this.cartSequence[i].discountId === discountId){
+					if(this.cartSequence[i].itemId === itemId){
+						this.cartSequence.splice(i, 1);
+					}
+				}
+			}
 		},
 
 		/**
